@@ -1,5 +1,5 @@
 -- Lodge Trip Hub: database setup, as applied to the Supabase project "Lodge Trip Hub" (ybmnrzbykmjixhfqhwaz).
--- Kept here as a backup and record. Applied 2026-11-13 as four migrations, in this order.
+-- Kept here as a backup and record. Applied 2026-11-13 as seven migrations, in this order.
 -- No secrets are in this file: the collector password is generated inside the database.
 
 -------------------------------------------------------------------------------
@@ -133,3 +133,67 @@ begin
 end; $$;
 revoke all on function public.take_google_call(int) from public, anon, authenticated;
 grant execute on function public.take_google_call(int) to service_role;
+
+-- 6. trip_times_alerts_terrain  (shared departure times, trip email lists and memory, trails by difficulty, lift hours)
+-- Departure times chosen on the page, shared by Fred and Kelly (and used by the trip emails)
+create table public.trip_departures (
+  trip_key text primary key,           -- "<first day>|<calendar title>"
+  up_time text check (up_time ~ '^\d{2}:\d{2}$'),
+  home_time text check (home_time ~ '^\d{2}:\d{2}$'),
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null
+);
+alter table public.trip_departures enable row level security;
+create policy "approved can read" on public.trip_departures for select to authenticated using ((select public.is_approved()));
+create policy "approved can add" on public.trip_departures for insert to authenticated with check ((select public.is_approved()));
+create policy "approved can change" on public.trip_departures for update to authenticated using ((select public.is_approved())) with check ((select public.is_approved()));
+
+-- Who gets trip emails
+alter table public.approved_users add column email_alerts boolean not null default false;
+update public.approved_users set email_alerts = true where label in ('Fred (gmail)', 'Kelly');
+
+create or replace function public.alert_recipients()
+returns table (email text)
+language sql stable security definer set search_path = ''
+as $$
+  select u.email::text from public.approved_users a join auth.users u on u.id = a.user_id where a.email_alerts and u.email is not null;
+$$;
+revoke all on function public.alert_recipients() from public, anon, authenticated;
+grant execute on function public.alert_recipients() to service_role;
+
+-- Trip email memory: last verdict level per trip, and every email sent
+create table public.trip_alert_state (
+  trip_key text primary key,
+  last_level text,
+  checked_at timestamptz not null default now()
+);
+alter table public.trip_alert_state enable row level security;
+create table public.trip_alert_log (
+  id bigint generated always as identity primary key,
+  trip_key text not null,
+  kind text not null check (kind in ('monday','red')),
+  sent_at timestamptz not null default now(),
+  level text,
+  recipients int,
+  result jsonb
+);
+alter table public.trip_alert_log enable row level security;
+create policy "approved can read" on public.trip_alert_log for select to authenticated using ((select public.is_approved()));
+
+-- Trails by difficulty and lift hours, from the mountains
+alter table public.mountain_reports add column terrain_levels jsonb, add column lift_hours jsonb;
+
+-- 7. trip_alerts_schedule  (checks trips 5 minutes past every hour; the function itself only acts at 8 AM, 2 PM and 8 PM Eastern)
+select cron.schedule(
+  'lodge-trip-alerts-hourly',
+  '5 * * * *',
+  $job$
+  select net.http_post(
+    url := 'https://ybmnrzbykmjixhfqhwaz.supabase.co/functions/v1/trip-alerts',
+    headers := jsonb_build_object('Content-Type', 'application/json',
+      'x-collector-token', (select decrypted_secret from vault.decrypted_secrets where name = 'collector_token')),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 120000
+  );
+  $job$
+);

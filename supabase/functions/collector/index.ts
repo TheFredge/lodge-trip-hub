@@ -75,6 +75,29 @@ async function readSugarbush() {
   const lifts: any[] = [];
   for (const a of j.MountainAreas ?? []) for (const l of a.Lifts ?? []) lifts.push({ name: l.Name, status: l.StatusEnglish ?? l.Status, area: l.MountainAreaName ?? a.Name });
   const cc = j.CurrentConditions ?? {};
+  // Trails by difficulty. Uphill routes and glades are left out, matching the resort's headline count (111).
+  const LEVEL: Record<string, string> = { GreenCircle: "green", BlueSquare: "blue", BlackDiamond: "black", DoubleBlackDiamond: "black" };
+  const levels: any = { green: { open: 0, total: 0 }, blue: { open: 0, total: 0 }, black: { open: 0, total: 0 } };
+  const seen = new Set<string>();
+  for (const a of j.MountainAreas ?? []) for (const t of a.Trails ?? []) {
+    const lv = LEVEL[t.TrailIcon]; if (!lv) continue;
+    const st = String(t.StatusEnglish ?? t.Status ?? "").toLowerCase(); seen.add(st);
+    levels[lv].total++; if (st === "open") levels[lv].open++;
+  }
+  levels.statuses = [...seen]; // only "closed" seen so far (off-season); re-check the open wording in season
+  // Scheduled lift hours by weekday: earliest opening and latest closing across all lifts
+  const mins = (s: string) => { const m = String(s ?? "").match(/(\d{1,2}):(\d{2})\s*([AP]M)/i); if (!m) return null; let h = Number(m[1]) % 12; if (m[3].toUpperCase() === "PM") h += 12; return h * 60 + Number(m[2]); };
+  const hours: any = {};
+  for (const day of ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]) {
+    let first: any = null, last: any = null;
+    for (const a of j.MountainAreas ?? []) for (const l of a.Lifts ?? []) {
+      const h = l.Hours?.[day]; if (!h) continue;
+      const o = mins(h.Open), c = mins(h.Close);
+      if (o != null && (first == null || o < first.m)) first = { m: o, text: h.Open };
+      if (c != null && (last == null || c > last.m)) last = { m: c, text: h.Close };
+    }
+    hours[day] = { first: first?.text ?? null, last: last?.text ?? null };
+  }
   return {
     mountain: "sugarbush",
     source_updated_text: txt(sr.LastUpdate) ?? txt(j.LastUpdate),
@@ -89,6 +112,8 @@ async function readSugarbush() {
     surface_primary: txt(sr.BaseConditions), surface_secondary: null,
     base_temp_f: num(cc.Base?.TemperatureF), summit_temp_f: num(cc.Summit?.TemperatureF),
     snow_by_area: { base: area(sr.BaseArea), mid: area(sr.MidMountainArea), summit: area(sr.SummitArea), snowmaking: txt(sr.SnowMakingActive), trailsMakingSnow: num(sr.TotalTrailsMakingSnow) },
+    terrain_levels: levels,
+    lift_hours: { byWeekday: hours },
     lifts,
     report_text: sr.Report ? stripHtml(String(sr.Report)).slice(0, 3000) : null,
   };
@@ -144,6 +169,14 @@ async function readMrg() {
     surface_primary: first(new RegExp("Primary:\\s*(.+?)" + stop)), surface_secondary: first(new RegExp("Secondary:\\s*(.+?)" + stop)),
     base_temp_f: num(first(/Current Base Temp:\s*(-?\d+)/)), summit_temp_f: num(first(/Current Summit Temp:\s*(-?\d+)/)),
     snow_by_area: { newSnowLow: firstNum(newSnow), newSnowHigh: lastNum(newSnow) },
+    // Trails by difficulty. "Open" here means any icon other than the closed cross (the open icon is unconfirmed until the mountain opens).
+    terrain_levels: (() => {
+      const lv: any = { green: { open: 0, total: 0 }, blue: { open: 0, total: 0 }, black: { open: 0, total: 0 } };
+      const map: Record<string, string> = { greencircle: "green", bluesquare: "blue", blackdiamond: "black", doubleblackdiamond: "black", doubleblack: "black" };
+      for (const t of trails) { const k = map[String(t.difficulty ?? "").toLowerCase()]; if (!k) continue; lv[k].total++; if (t.status !== "closed" && t.status !== "unknown") lv[k].open++; }
+      return lv;
+    })(),
+    lift_hours: { today: { first: first(/Lifts Open Today At:\s*([\d:]+(?:\s*[AP]M)?)/i), last: first(/Lifts Close Today At:\s*([\d:]+(?:\s*[AP]M)?)/i) } },
     lifts: [...lifts, ...trails],
     report_text: null,
   };
