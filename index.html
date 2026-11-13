@@ -307,6 +307,7 @@ async function refreshDrive(departMs) {
   const r = await sb.functions.invoke("hub", { body: { action: "drive", depart: departMs ? new Date(departMs).toISOString() : null } });
   if (r.error) S.driveError = "Couldn't reach the drive lookup.";
   else if (r.data?.error === "no_maps_key") S.driveError = "Live drive time isn't set up yet (Google Maps key).";
+  else if (r.data?.error === "daily_limit") S.driveError = `Today's ${r.data.limit} drive lookups are used up. It resets at midnight.`;
   else if (r.data?.error) S.driveError = `Drive lookup failed: ${r.data.error}`;
   else S.drive = r.data;
   // Ski days: a booked trip's dates; otherwise the arrival day (if arriving before noon) and the next 2 days

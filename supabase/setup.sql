@@ -117,3 +117,19 @@ create table public.drive_cache (cache_key text primary key, created_at timestam
 alter table public.drive_cache enable row level security;
 create table public.nws_grid_cache (latlon text primary key, office text not null, grid_x int not null, grid_y int not null, label text, created_at timestamptz not null default now());
 alter table public.nws_grid_cache enable row level security;
+
+-------------------------------------------------------------------------------
+-- 5. google_daily_cap  (our own hard limit on Google drive-time lookups; the hub function asks before each call)
+-------------------------------------------------------------------------------
+create table public.google_usage (day date primary key, calls int not null default 0);
+alter table public.google_usage enable row level security;
+create or replace function public.take_google_call(daily_limit int) returns boolean
+language plpgsql security definer set search_path = '' as $$
+declare today date := (now() at time zone 'America/New_York')::date; n int;
+begin
+  insert into public.google_usage(day, calls) values (today, 0) on conflict (day) do nothing;
+  update public.google_usage set calls = calls + 1 where day = today and calls < daily_limit returning calls into n;
+  return n is not null;
+end; $$;
+revoke all on function public.take_google_call(int) from public, anon, authenticated;
+grant execute on function public.take_google_call(int) to service_role;
