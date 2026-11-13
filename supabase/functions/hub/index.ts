@@ -10,6 +10,7 @@ const ORIGIN = "Towaco, NJ 07082";
 const DEST = "235 Schuss Pass, Waitsfield, VT 05673";
 const KEYWORDS = ["mad river glen", "sugarbush", "lodge"];
 const CHECKPOINT_MILES = 45;
+const GOOGLE_DAILY_LIMIT = 100; // agreed with Fred 2026-11-13
 const TZ = "America/New_York";
 
 const cors = {
@@ -190,6 +191,11 @@ async function drive(departIso: string | null) {
   const maxAge = future ? 3600000 : 600000;
   const { data: hit } = await admin.from("drive_cache").select("result, created_at").eq("cache_key", cacheKey).maybeSingle();
   if (hit && now - Date.parse(hit.created_at) < maxAge) return { ...hit.result, cached: true };
+
+  // Hard daily cap, counted in our own database, so Google is never asked more than GOOGLE_DAILY_LIMIT times a day
+  const { data: allowed, error: capErr } = await admin.rpc("take_google_call", { daily_limit: GOOGLE_DAILY_LIMIT });
+  if (capErr) throw new Error(`Couldn't check the daily limit: ${capErr.message}`);
+  if (allowed !== true) return { error: "daily_limit", limit: GOOGLE_DAILY_LIMIT };
 
   const gr = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
     method: "POST",
