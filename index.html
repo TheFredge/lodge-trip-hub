@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14202B">
+<meta name="robots" content="noindex, nofollow">
+<title>Lodge Trip Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{--ink:#14202B;--muted:#4A5866;--line:#E3E8EC;--ground:#EEF2F5;--blue:#1A4FA0;--warn:#8A4500;--warnbg:#FFF4E5;--warnink:#6B3500;--bad:#9B1C1C;--badbg:#FDECEC;--good:#1E6B3A;--goodbg:#E8F5EC}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--ground);font-size:14px;line-height:1.4}
+a{color:var(--blue)}a:hover{color:#123A78}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700}
+h2{margin:0;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.card{background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.small{font-size:12px;color:var(--muted)}
+.muted{color:var(--muted)}
+.big{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;line-height:1.1}
+.pill{background:var(--ink);color:#fff;font-size:11px;font-weight:600;padding:6px 10px;border-radius:999px;letter-spacing:.04em;border:0;cursor:pointer;min-height:32px}
+.verdict{border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;color:#fff}
+.verdict.go{background:var(--good)}.verdict.caution{background:var(--warn)}.verdict.reconsider{background:var(--bad)}.verdict.unknown{background:#4A5866}
+.verdict .title{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700}
+.verdict ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btnrow button{flex:1 1 30%;min-height:44px;border:1px solid #C5CED6;background:#fff;color:var(--ink);border-radius:10px;font:600 13px Inter,sans-serif;cursor:pointer;padding:4px 8px}
+.btnrow button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue);color:#fff}
+label{font-size:12px;color:var(--muted)}
+input{min-height:44px;border:1px solid #C5CED6;border-radius:10px;padding:0 12px;font:500 15px Inter,sans-serif;color:var(--ink);width:100%;background:#fff}
+.field{display:flex;flex-direction:column;gap:6px}
+.primary{display:flex;align-items:center;justify-content:center;min-height:48px;background:var(--blue);color:#fff;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:0;cursor:pointer;width:100%}
+.primary:hover{color:#fff;background:#123A78}
+.row{display:grid;grid-template-columns:72px 1fr auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);align-items:baseline}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.kv > :last-child{text-align:right}
+.warnbox{background:var(--warnbg);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--warnink)}
+.badbox{background:var(--badbg);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--bad)}
+.infobox{background:var(--ground);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.w{color:var(--warn);font-weight:600}.r{color:var(--bad);font-weight:600}
+.days{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;text-align:center}
+.day{background:var(--ground);border-radius:10px;padding:10px 2px;display:flex;flex-direction:column;gap:4px;border:2px solid transparent}
+.day.ski{border-color:var(--blue)}.day.flag{background:var(--warnbg)}.day.redflag{background:var(--badbg)}
+.day .hi{font-weight:700;font-size:16px}
+.mtn{display:flex;flex-direction:column;gap:8px}
+.mtn + .mtn{border-top:1px solid var(--line);padding-top:14px}
+.mtn .head{display:flex;justify-content:space-between;align-items:baseline}
+.mtn .name{font-weight:700;font-size:16px}
+.pct{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
+.bar{height:10px;background:var(--line);border-radius:999px;overflow:hidden}.bar > div{height:100%;background:var(--blue)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;font-size:13px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.tile{background:var(--ground);border-radius:10px;padding:8px 4px}.tile b{display:block;font-size:16px}
+.links a{display:flex;align-items:center;min-height:44px;font-weight:500;border-top:1px solid var(--line)}
+.hidden{display:none !important}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);align-items:center}
+.legend span::before{content:"";display:inline-block;width:18px;height:3px;margin-right:6px;vertical-align:middle;background:var(--blue)}
+.legend span.plain::before{display:none}
+.legend span.avg::before{background:repeating-linear-gradient(90deg,#7A8794 0 4px,transparent 4px 8px)}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>
+      <h1>Lodge Trip Hub</h1>
+      <div class="small" id="updated">Loading…</div>
+    </div>
+    <button class="pill hidden" id="signout" type="button">Sign out</button>
+  </div>
+
+  <!-- Sign-in -->
+  <section class="card hidden" id="signin">
+    <h2>Sign in</h2>
+    <p style="margin:0">Enter your email and we'll send you a sign-in link. Open it on this phone.</p>
+    <form id="signin-form" class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <button class="primary" type="submit" style="margin-top:8px">Email me a sign-in link</button>
+    </form>
+    <div id="signin-msg" class="small"></div>
+  </section>
+
+  <section class="card hidden" id="notapproved">
+    <h2>Not on the list</h2>
+    <p style="margin:0">You're signed in, but this account isn't approved for the hub yet. Ask the person who shared this page with you.</p>
+  </section>
+
+  <div id="app" class="hidden" style="display:flex;flex-direction:column;gap:16px">
+    <section class="verdict unknown" id="verdict" aria-live="polite"></section>
+
+    <section class="card" id="trip">
+      <h2>Which trip</h2>
+      <div class="btnrow" id="trip-buttons"></div>
+      <div class="field" id="depart-field">
+        <label for="depart">Leaving Towaco</label>
+        <input id="depart" type="datetime-local">
+      </div>
+      <div class="small" id="trip-note"></div>
+    </section>
+
+    <section class="card" id="drive">
+      <h2>The drive</h2>
+      <div id="drive-body" class="muted">Working out the drive…</div>
+      <a class="primary" id="nav" href="https://www.google.com/maps/dir/?api=1&destination=235+Schuss+Pass%2C+Waitsfield%2C+VT+05673&travelmode=driving">Start navigation</a>
+    </section>
+
+    <section class="card" id="weather">
+      <h2>Waitsfield, next 5 days</h2>
+      <div id="weather-body"></div>
+    </section>
+
+    <section class="card" id="mountains">
+      <h2>The mountains</h2>
+      <div id="mountains-body"></div>
+    </section>
+
+    <section class="card" id="snowpack">
+      <h2>Snowpack</h2>
+      <div id="snowpack-body"></div>
+    </section>
+
+    <section class="card links">
+      <h2 style="margin-bottom:4px">Quick links</h2>
+      <a href="https://www.madriverglen.com/conditions">Mad River Glen snow report</a>
+      <a href="https://www.sugarbush.com/mountain/conditions">Sugarbush snow report</a>
+      <a href="https://www.madriverglen.com/live-web-cam/">Mad River Glen webcams</a>
+      <a href="https://www.sugarbush.com/mountain/webcams">Sugarbush webcams</a>
+      <a href="https://newengland511.org">Vermont road conditions (New England 511)</a>
+      <a href="https://511ny.org">New York road conditions (511NY)</a>
+      <a href="https://forecast.weather.gov/MapClick.php?lat=44.2012&lon=-72.9142">Weather service forecast for the lodge</a>
+    </section>
+    <p class="small" style="margin:0 4px">Road closures aren't checked automatically: use the 511 links. Mountain forecasts are for about 900–1,000 ft below the summits.</p>
+  </div>
+</main>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// ---------- settings (all agreed in the project note) ----------
+const SUPABASE_URL = "https://ybmnrzbykmjixhfqhwaz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ebUxKJp9JJ5uTGdgBUnzxg_lIdYujrU"; // public by design; data is protected by sign-in rules
+const TZ = "America/New_York";
+const LODGE = { lat: 44.2012, lon: -72.9142 };
+const UPPER = ["mrg_summit", "mount_ellen", "lincoln_peak"];
+const RULES = {
+  windChillYellowF: 5, windChillRedF: -10,          // upper-mountain forecast, ski hours
+  terrainYellowPct: 33, terrainRedPct: 15,          // better of the two mountains
+  rainRedPop: 50, rainYellowPop: 20, thawF: 32,     // ski days, upper mountain
+  snowRedIn: 8, snowYellowIn: 3,                    // on the route during the drive
+  skiFromHour: 9, skiToHour: 16,                    // "ski hours", Eastern time
+  defaultDepart: "05:30",                           // for booked trips
+};
+const RED_ALERTS = ["Blizzard Warning", "Ice Storm Warning"];
+const YELLOW_ALERTS = ["Winter Storm Warning"];
+const NOTE_ALERTS = ["Winter Weather Advisory"];
+const RAIN = ["rain", "rain_showers", "drizzle", "freezing_rain", "freezing_drizzle"];
+
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------- time helpers ----------
+function etParts(ms) {
+  const p = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", weekday: "short" }).formatToParts(new Date(ms));
+  const g = (k) => p.find((x) => x.type === k).value;
+  return { date: `${g("year")}-${g("month")}-${g("day")}`, hour: Number(g("hour")) % 24, minute: Number(g("minute")), weekday: g("weekday") };
+}
+const fmtTime = (ms) => new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).format(new Date(ms));
+const fmtDay = (ms) => new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric" }).format(new Date(ms));
+const fmtDayTime = (ms) => `${fmtDay(ms)}, ${fmtTime(ms)}`;
+const dateLabel = (d) => fmtDay(Date.parse(d + "T12:00:00Z"));
+const shortWeekday = (d) => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short" }).format(new Date(d + "T12:00:00Z"));
+const addDays = (d, n) => { const t = new Date(d + "T12:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+function wallToMs(dateStr, hh, mm) { // Eastern wall time -> ms
+  const [y, mo, d] = dateStr.split("-").map(Number);
+  for (const off of [5, 4]) { const t = Date.UTC(y, mo - 1, d, hh + off, mm); const p = etParts(t); if (p.date === dateStr && p.hour === hh && p.minute === mm) return t; }
+  return Date.UTC(y, mo - 1, d, hh + 5, mm);
+}
+function ago(ms) { const m = Math.round((Date.now() - ms) / 60000); if (m < 1) return "just now"; if (m < 60) return `${m} min ago`; const h = Math.round(m / 60); if (h < 36) return `${h} h ago`; return `${Math.round(h / 24)} days ago`; }
+const dur = (s) => { const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; };
+const toLocalInput = (ms) => { const p = etParts(ms); return `${p.date}T${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`; };
+function fromLocalInput(v) { const [d, t] = v.split("T"); const [h, m] = t.split(":").map(Number); return wallToMs(d, h, m); }
+
+// ---------- weather-service series helpers ----------
+function interval(vt) {
+  const [s, d] = vt.split("/"); const start = Date.parse(s);
+  const m = d.match(/P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/) || [];
+  return [start, start + (((+m[1] || 0) * 24 + (+m[2] || 0)) * 3600000 + (+m[3] || 0) * 60000)];
+}
+function hourly(series, perHourShare = false) { // -> [{t, v}] one entry per hour
+  const out = [];
+  for (const v of series?.values ?? []) {
+    const [a, b] = interval(v.validTime); const n = Math.max(1, Math.round((b - a) / 3600000));
+    for (let i = 0; i < n; i++) out.push({ t: a + i * 3600000, v: perHourShare && typeof v.value === "number" ? v.value / n : v.value });
+  }
+  return out;
+}
+const cToF = (c) => c * 9 / 5 + 32;
+const kmhToMph = (k) => k / 1.609344;
+const lastHour = (series) => { const v = series?.values ?? []; return v.length ? interval(v[v.length - 1].validTime)[1] : 0; };
+
+// ---------- state ----------
+const S = { data: null, trips: [], tripsError: null, mode: "now", tripIdx: null, drive: null, driveError: null, skiDays: [] };
+
+// ---------- sign-in ----------
+async function start() {
+  const params = new URLSearchParams(location.hash.slice(1) + "&" + location.search.slice(1));
+  if (params.get("error_description")) {
+    $("signin-msg").textContent = `That sign-in link didn't work (${params.get("error_description")}). Request a new one.`;
+    history.replaceState(null, "", location.pathname);
+  }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return showSignIn();
+  $("signout").classList.remove("hidden");
+  const { data: ok } = await sb.rpc("is_approved");
+  if (ok !== true) { $("updated").textContent = ""; $("notapproved").classList.remove("hidden"); return; }
+  $("app").classList.remove("hidden");
+  await loadAll();
+}
+function showSignIn() { $("updated").textContent = ""; $("signin").classList.remove("hidden"); }
+$("signin-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("email").value.trim();
+  $("signin-msg").textContent = "Sending…";
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+  $("signin-msg").textContent = error ? `Couldn't send the link: ${error.message}` : "Check your email for the sign-in link.";
+});
+$("signout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+// ---------- loading ----------
+async function loadAll() {
+  const since = new Date(Date.now() - 10 * 86400000).toISOString();
+  const season = currentSeason();
+  const [reports, forecasts, alerts, stake, hist, runs, trips] = await Promise.all([
+    sb.from("mountain_reports").select("mountain,collected_at,checked_at,source_updated_at,trails_open,trails_total,lifts_open,lifts_total,new_snow_24h_in,new_snow_72h_in,new_snow_7d_in,season_total_in,base_depth_text,surface_primary,surface_secondary,operating_status,snow_by_area,report_text").gte("collected_at", since).order("collected_at", { ascending: false }),
+    sb.from("forecast_latest").select("*"),
+    sb.from("alerts_latest").select("*"),
+    sb.from("stake_readings").select("issued_at,new_snow_in,new_snow_trace,depth_in,depth_trace").order("issued_at", { ascending: false }).limit(60),
+    sb.from("stake_history").select("season,day_index,day_label,depth_in").in("season", [season.name, "Average Season"]).order("day_index"),
+    sb.from("collector_runs").select("finished_at,ok").order("started_at", { ascending: false }).limit(1),
+    sb.functions.invoke("hub", { body: { action: "trips" } }),
+  ]);
+  for (const r of [reports, forecasts, alerts, stake, hist, runs]) if (r.error) throw r.error;
+  S.data = { reports: reports.data, forecasts: Object.fromEntries(forecasts.data.map((f) => [f.point_id, f])), alerts: alerts.data, stake: stake.data, hist: hist.data, season };
+  const run = runs.data[0];
+  $("updated").textContent = run ? `Data updated ${ago(Date.parse(run.finished_at))}${run.ok ? "" : " (some sources failed)"}` : "No data collected yet";
+  if (trips.error) S.tripsError = "Couldn't load booked trips."; else if (trips.data?.error === "no_calendar") S.tripsError = "Booked trips: calendar link not set up yet."; else if (trips.data?.error) S.tripsError = `Booked trips: ${trips.data.error}`; else S.trips = trips.data.trips ?? [];
+  renderTripPicker();
+  renderMountains();
+  renderSnowpack();
+  await selectTrip("now");
+}
+
+function currentSeason() {
+  const today = etParts(Date.now()).date; const y = +today.slice(0, 4), m = +today.slice(5, 7);
+  const startY = m >= 9 ? y : y - 1;
+  const dayIndex = Math.round((Date.parse(today + "T12:00:00Z") - Date.parse(`${startY}-09-01T12:00:00Z`)) / 86400000);
+  return { name: `${startY}-${startY + 1}`, startY, dayIndex, today };
+}
+
+// ---------- trip picker ----------
+function renderTripPicker() {
+  const btns = [`<button type="button" data-mode="now">Leave now</button>`];
+  S.trips.slice(0, 4).forEach((t, i) => {
+    const label = t.days.length > 1 ? `${dateLabel(t.startDate).replace(/^\w+, /, "")}–${t.lastDate.slice(5, 7) === t.startDate.slice(5, 7) ? +t.lastDate.slice(8) : dateLabel(t.lastDate).replace(/^\w+, /, "")}` : dateLabel(t.startDate);
+    btns.push(`<button type="button" data-mode="trip" data-idx="${i}">${esc(label)}</button>`);
+  });
+  btns.push(`<button type="button" data-mode="custom">Pick a date</button>`);
+  $("trip-buttons").innerHTML = btns.join("");
+  $("trip-buttons").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => selectTrip(b.dataset.mode, b.dataset.idx)));
+  $("depart").addEventListener("change", () => { if ($("depart").value) { if (S.mode === "now") S.mode = "custom"; refreshDrive(fromLocalInput($("depart").value)); } });
+}
+
+async function selectTrip(mode, idx) {
+  S.mode = mode; S.tripIdx = idx != null ? +idx : null;
+  $("trip-buttons").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode && (mode !== "trip" || +b.dataset.idx === S.tripIdx))));
+  let depart = null; let note = "";
+  if (mode === "now") {
+    $("depart-field").classList.add("hidden");
+    note = "Leaving now from Towaco.";
+  } else if (mode === "trip") {
+    const t = S.trips[S.tripIdx];
+    $("depart-field").classList.remove("hidden");
+    const [h, m] = RULES.defaultDepart.split(":").map(Number);
+    depart = t.startTime ? Date.parse(t.startTime) : wallToMs(t.startDate, h, m);
+    $("depart").value = toLocalInput(depart);
+    const cd = Date.parse(t.cancelDeadline);
+    note = `${esc(t.title)}, booked. ${cd > Date.now() ? `Free cancel until ${fmtTime(cd)} ${fmtDay(cd)}.` : `The free-cancel deadline (${fmtDay(cd)}, ${fmtTime(cd)}) has passed.`}`;
+  } else {
+    $("depart-field").classList.remove("hidden");
+    if (!$("depart").value) $("depart").value = toLocalInput(Date.now() + 86400000);
+    depart = fromLocalInput($("depart").value);
+    note = "Pick when you'd leave Towaco.";
+  }
+  if (S.tripsError) note += ` <span class="w">${esc(S.tripsError)}</span>`;
+  $("trip-note").innerHTML = note;
+  await refreshDrive(depart);
+}
+
+async function refreshDrive(departMs) {
+  $("drive-body").innerHTML = `<span class="muted">Working out the drive…</span>`;
+  S.drive = null; S.driveError = null;
+  const r = await sb.functions.invoke("hub", { body: { action: "drive", depart: departMs ? new Date(departMs).toISOString() : null } });
+  if (r.error) S.driveError = "Couldn't reach the drive lookup.";
+  else if (r.data?.error === "no_maps_key") S.driveError = "Live drive time isn't set up yet (Google Maps key).";
+  else if (r.data?.error) S.driveError = `Drive lookup failed: ${r.data.error}`;
+  else S.drive = r.data;
+  // Ski days: a booked trip's dates; otherwise the arrival day (if arriving before noon) and the next 2 days
+  const arrive = S.drive ? Date.parse(S.drive.arrive) : (departMs ?? Date.now()) + 5.5 * 3600000;
+  if (S.mode === "trip") S.skiDays = S.trips[S.tripIdx].days;
+  else { const a = etParts(arrive); S.skiDays = (a.hour < 12 ? [a.date] : []).concat([addDays(a.date, 1), addDays(a.date, 2)]); }
+  renderDrive(arrive);
+  renderWeather();
+  renderVerdict();
+}
+
+// ---------- the drive ----------
+function wxLabel(list) {
+  if (!list?.length) return "";
+  const w = list[0]; const name = w.weather.replace(/_/g, " ");
+  const lead = w.coverage === "slight_chance" ? "Slight chance of " : w.coverage === "chance" ? "Chance of " : "";
+  const txt = lead + (w.intensity === "heavy" ? "heavy " : w.intensity === "light" || w.intensity === "very_light" ? "light " : "") + name;
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+function renderDrive(arriveMs) {
+  const sun = sunTimes(etParts(arriveMs).date);
+  const dayNote = sun ? (arriveMs < sun.rise ? `You'd arrive before sunrise (${fmtTime(sun.rise)}).` : arriveMs > sun.set ? `You'd arrive after dark. Sunset is ${fmtTime(sun.set)}.` : `Sunset ${fmtTime(sun.set)}. You arrive in daylight.`) : "";
+  if (!S.drive) {
+    $("drive-body").innerHTML = `<div class="warnbox">${esc(S.driveError)}</div><div class="small">${esc(dayNote)} ${S.driveError ? "Arrival estimated at about 5½ hours." : ""}</div>`;
+    return;
+  }
+  const d = S.drive; const arrive = Date.parse(d.arrive);
+  const slower = d.usualSec ? Math.round((d.durationSec - d.usualSec) / 60) : null;
+  const rows = d.checkpoints.map((c) => {
+    const flag = c.freezingRain ? "r" : (c.snowIn ?? 0) >= RULES.snowYellowIn ? "w" : (c.weather?.length ? "w" : "");
+    const right = c.noForecast ? `<span class="muted">Beyond forecast</span>` : c.error ? `<span class="muted">No data</span>` :
+      `<span class="${flag}">${esc(wxLabel(c.weather) || "Dry")}${c.tempF != null ? `, ${c.tempF}°` : ""}${c.snowIn >= 0.5 ? ` · ${c.snowIn} in` : ""}${c.freezingRain ? " · ice" : ""}</span>`;
+    return `<div class="row"><div class="muted">${fmtTime(Date.parse(c.pass))}</div><div>${esc(c.label ?? `Mile ${c.mile}`)}</div><div>${right}</div></div>`;
+  }).join("");
+  const alertBoxes = d.alerts.map((a) => {
+    const cls = RED_ALERTS.includes(a.event) ? "badbox" : YELLOW_ALERTS.includes(a.event) ? "warnbox" : "infobox";
+    const until = a.ends ? ` until ${fmtDayTime(Date.parse(a.ends))}` : "";
+    return `<div class="${cls}"><b>${esc(a.event)}</b>${esc(until)}<br><span class="small">${esc((a.area ?? "").split(";").slice(0, 3).join(";"))}</span></div>`;
+  }).join("");
+  const snowLine = d.maxSnowIn >= 0.5 ? `<div class="${d.maxSnowIn >= RULES.snowYellowIn ? "warnbox" : "infobox"}">About ${d.maxSnowIn} in of snow expected on the route around the drive.</div>` : "";
+  $("drive-body").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px">
+      <div><div class="small">Arrive at the lodge</div><div class="big">${fmtTime(arrive)}</div><div class="small">${fmtDay(arrive)}</div></div>
+      <div style="text-align:right;font-size:13px"><div style="font-weight:600">${dur(d.durationSec)}</div>
+        ${slower != null ? `<div class="${slower > 10 ? "w" : "muted"}">${slower > 2 ? `${slower} min slower than usual` : slower < -2 ? `${-slower} min faster than usual` : "Normal traffic"}</div>` : ""}
+        <div class="muted">${d.distanceMi} mi${d.future ? " · predicted traffic" : ""}</div></div>
+    </div>
+    <div>${rows}</div>
+    ${d.freezingRain ? `<div class="badbox">Freezing rain or ice is forecast on the route around your drive.</div>` : ""}
+    ${snowLine}${alertBoxes}
+    ${d.forecastGaps ? `<div class="small">Part of the drive is beyond the weather forecast (about 7 days out).</div>` : ""}
+    <div class="small">${esc(dayNote)}${d.cached ? " · Drive checked within the last few minutes." : ""}</div>`;
+}
+
+// Sunrise and sunset at the lodge (NOAA method), returns ms
+function sunTimes(dateStr) {
+  const rad = Math.PI / 180; const [y, m, d] = dateStr.split("-").map(Number);
+  const N = Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000);
+  const calc = (rise) => {
+    const lngHour = LODGE.lon / 15; const t = N + ((rise ? 6 : 18) - lngHour) / 24;
+    const M = 0.9856 * t - 3.289; let L = M + 1.916 * Math.sin(M * rad) + 0.020 * Math.sin(2 * M * rad) + 282.634; L = (L + 360) % 360;
+    let RA = Math.atan(0.91764 * Math.tan(L * rad)) / rad; RA = (RA + 360) % 360;
+    RA = (RA + (Math.floor(L / 90) * 90 - Math.floor(RA / 90) * 90)) / 15;
+    const sinDec = 0.39782 * Math.sin(L * rad), cosDec = Math.cos(Math.asin(sinDec));
+    const cosH = (Math.cos(90.833 * rad) - sinDec * Math.sin(LODGE.lat * rad)) / (cosDec * Math.cos(LODGE.lat * rad));
+    if (cosH > 1 || cosH < -1) return null;
+    let H = rise ? 360 - Math.acos(cosH) / rad : Math.acos(cosH) / rad; H /= 15;
+    const T = H + RA - 0.06571 * t - 6.622; const UT = ((T - lngHour) % 24 + 24) % 24;
+    return Date.UTC(y, m - 1, d) + UT * 3600000;
+  };
+  const rise = calc(true), set = calc(false);
+  return rise && set ? { rise, set } : null;
+}
+
+// ---------- weather ----------
+function upperAnalysis() {
+  // Worst case across the three upper-mountain points, ski hours on ski days
+  const out = { windChill: null, wind: null, gust: null, rainRed: [], rainYellow: [], thaw: [], missingDays: [], perDay: {} };
+  const days = new Set(S.skiDays);
+  const covered = new Set();
+  for (const id of UPPER) {
+    const f = S.data.forecasts[id]; if (!f) continue;
+    const h = f.hourly; const end = lastHour(h.temperature);
+    const pop = new Map(hourly(h.probabilityOfPrecipitation).map((x) => [x.t, x.v]));
+    const wx = new Map(hourly(h.weather).map((x) => [x.t, x.v]));
+    const wind = new Map(hourly(h.windSpeed).map((x) => [x.t, x.v]));
+    const gust = new Map(hourly(h.windGust).map((x) => [x.t, x.v]));
+    const wc = new Map(hourly(h.windChill).map((x) => [x.t, x.v]));
+    for (const { t, v } of hourly(h.temperature)) {
+      if (t >= end) continue; const p = etParts(t);
+      if (!days.has(p.date) || p.hour < RULES.skiFromHour || p.hour >= RULES.skiToHour) continue;
+      covered.add(p.date);
+      const day = (out.perDay[p.date] ??= { minWC: null, rain: 0, thaw: false });
+      const tF = cToF(v);
+      const wcF = typeof wc.get(t) === "number" ? cToF(wc.get(t)) : tF;
+      if (out.windChill == null || wcF < out.windChill.f) out.windChill = { f: Math.round(wcF), t, id };
+      if (day.minWC == null || wcF < day.minWC) day.minWC = wcF;
+      const ws = wind.get(t), gs = gust.get(t);
+      if (typeof ws === "number" && (out.wind == null || ws > out.wind.v)) out.wind = { v: ws, t, id };
+      if (typeof gs === "number" && (out.gust == null || gs > out.gust.v)) out.gust = { v: gs, t, id };
+      const rainy = (wx.get(t) ?? []).some((w) => w && RAIN.includes(w.weather));
+      const pp = pop.get(t) ?? 0;
+      if (rainy && pp >= RULES.rainRedPop) { day.rain = 2; out.rainRed.push(t); }
+      else if (rainy && pp >= RULES.rainYellowPop) { day.rain = Math.max(day.rain, 1); out.rainYellow.push(t); }
+      if (tF > RULES.thawF) { day.thaw = true; out.thaw.push(t); }
+    }
+  }
+  out.missingDays = S.skiDays.filter((d) => !covered.has(d));
+  return out;
+}
+const POINT_NAME = { mrg_summit: "Mad River Glen", mount_ellen: "Mt. Ellen", lincoln_peak: "Lincoln Peak" };
+
+function renderWeather() {
+  const f = S.data.forecasts.lodge;
+  if (!f) { $("weather-body").innerHTML = `<div class="muted">No forecast saved yet.</div>`; return; }
+  const today = etParts(Date.now()).date;
+  const snowByDay = {};
+  for (const { t, v } of hourly(f.hourly.snowfallAmount, true)) { const d = etParts(t).date; snowByDay[d] = (snowByDay[d] ?? 0) + (v || 0); }
+  const up = upperAnalysis();
+  const cells = [];
+  for (let i = 0; i < 5; i++) {
+    const d = addDays(today, i);
+    const dayP = f.periods.find((p) => p.isDaytime && etParts(Date.parse(p.start)).date === d);
+    const nightP = f.periods.find((p) => !p.isDaytime && etParts(Date.parse(p.start)).date === d);
+    const snowIn = (snowByDay[d] ?? 0) / 25.4;
+    const pd = up.perDay[d]; const ski = S.skiDays.includes(d);
+    const red = ski && pd && (pd.rain === 2 || pd.minWC <= RULES.windChillRedF);
+    const yellow = ski && pd && !red && (pd.rain === 1 || pd.thaw || pd.minWC <= RULES.windChillYellowF);
+    const tag = !ski || !pd ? (snowIn >= 0.5 ? `<div class="small" style="color:var(--blue);font-weight:600">${snowIn.toFixed(snowIn < 2 ? 1 : 0)} in</div>` : `<div class="small">Dry</div>`)
+      : pd.rain ? `<div class="small r">Rain</div>` : pd.minWC <= RULES.windChillYellowF ? `<div class="small w">Cold</div>` : pd.thaw ? `<div class="small w">Thaw</div>` : snowIn >= 0.5 ? `<div class="small" style="color:var(--blue);font-weight:600">${snowIn.toFixed(snowIn < 2 ? 1 : 0)} in</div>` : `<div class="small">Dry</div>`;
+    cells.push(`<div class="day${ski ? " ski" : ""}${red ? " redflag" : yellow ? " flag" : ""}"><div style="font-weight:600">${i === 0 ? "Today" : shortWeekday(d)}</div><div class="small">${esc(shortWx(dayP?.short ?? nightP?.short ?? ""))}</div><div class="hi">${dayP ? `${dayP.temperature}°` : "–"}</div><div class="small">${nightP ? `${nightP.temperature}°` : "–"}</div>${tag}</div>`);
+  }
+  const wcLine = up.windChill ? `<div class="kv"><div>Coldest wind chill, ski hours<br><span class="small">${esc(POINT_NAME[up.windChill.id])}, ${fmtDayTime(up.windChill.t)}</span></div><div class="${up.windChill.f <= RULES.windChillRedF ? "r" : up.windChill.f <= RULES.windChillYellowF ? "w" : ""}">${up.windChill.f}°F</div></div>` : "";
+  const windLine = up.wind ? `<div class="kv"><div>Strongest upper-mountain wind</div><div>${Math.round(kmhToMph(up.wind.v))} mph${up.gust ? `, gusts ${Math.round(kmhToMph(up.gust.v))}` : ""}</div></div>` : "";
+  const rainTxt = up.rainRed.length ? `<span class="r">Rain likely</span>` : up.rainYellow.length ? `<span class="w">Chance of rain</span>` : up.thaw.length ? `<span class="w">Above freezing</span>` : "None";
+  const rainLine = `<div class="kv"><div>Rain or thaw on ski days</div><div>${S.skiDays.length && up.missingDays.length === S.skiDays.length ? `<span class="muted">Not in forecast yet</span>` : rainTxt}</div></div>`;
+  const skiLine = `<div class="small">Outlined days are ski days (${S.skiDays.map(dateLabel).join(", ") || "none"}). Wind chill and rain use the upper-mountain forecasts, 9 AM–4 PM.${up.missingDays.length && up.missingDays.length < S.skiDays.length ? ` Not in the forecast yet: ${up.missingDays.map(dateLabel).join(", ")}.` : ""}</div>`;
+  const lodgeAlerts = (S.data.alerts.find((a) => a.scope === "lodge")?.alerts ?? []).map((a) => `<div class="warnbox"><b>${esc(a.event)}</b> at the lodge${a.ends ? ` until ${fmtDayTime(Date.parse(a.ends))}` : ""}</div>`).join("");
+  $("weather-body").innerHTML = `<div class="days">${cells.join("")}</div>${lodgeAlerts}<div>${wcLine}${windLine}${rainLine}</div>${skiLine}`;
+}
+function shortWx(s) {
+  const t = s.toLowerCase();
+  if (t.includes("freezing")) return "Ice"; if (t.includes("snow")) return "Snow"; if (t.includes("rain") || t.includes("shower")) return "Rain";
+  if (t.includes("sunny") || t.includes("clear")) return t.includes("partly") || t.includes("mostly") ? "Some sun" : "Sun";
+  if (t.includes("cloud")) return "Cloud"; if (t.includes("fog")) return "Fog"; return s.split(" ").slice(-1)[0] || "";
+}
+
+// ---------- mountains ----------
+function mountainSummary(id) {
+  const rows = S.data.reports.filter((r) => r.mountain === id);
+  if (!rows.length) return null;
+  const latest = rows[0];
+  // Add up daily new snow: the last report of each day, by the resort's own update time
+  const byDay = new Map();
+  for (const r of rows) { const d = etParts(Date.parse(r.source_updated_at ?? r.collected_at)).date; if (!byDay.has(d)) byDay.set(d, r.new_snow_24h_in ?? 0); }
+  const today = etParts(Date.now()).date;
+  const sumDays = (n) => { let s = 0; for (const [d, v] of byDay) if (d > addDays(today, -n)) s += v; return s; };
+  const oldest = etParts(Date.parse(rows[rows.length - 1].collected_at)).date;
+  return { latest, in24: latest.new_snow_24h_in, in72: latest.new_snow_72h_in ?? sumDays(3), in7: latest.new_snow_7d_in ?? sumDays(7), partial7: !latest.new_snow_7d_in && oldest > addDays(today, -7), since: oldest };
+}
+function renderMountains() {
+  const blocks = [["mad_river_glen", "Mad River Glen"], ["sugarbush", "Sugarbush"]].map(([id, name]) => {
+    const m = mountainSummary(id);
+    if (!m) return `<div class="mtn"><div class="name">${name}</div><div class="muted">No report saved yet.</div></div>`;
+    const r = m.latest; const pct = r.trails_total ? Math.round((100 * r.trails_open) / r.trails_total) : null;
+    const updated = r.source_updated_at ? Date.parse(r.source_updated_at) : null;
+    const stale = updated && Date.now() - updated > 36 * 3600000;
+    const closed = r.lifts_open === 0;
+    const surface = [r.surface_primary, r.surface_secondary].filter((x, i, a) => x && a.indexOf(x) === i).join(", ");
+    const base = id === "sugarbush" && r.base_depth_text ? `Base ${esc(r.base_depth_text.replace(" - ", " to "))} in` : "";
+    return `<div class="mtn">
+      <div class="head"><div class="name">${name}</div><div class="pct">${pct != null ? pct + "%" : "–"}</div></div>
+      <div class="bar" role="img" aria-label="${pct ?? 0} percent of trails open"><div style="width:${pct ?? 0}%"></div></div>
+      <div class="grid2"><div>${r.trails_open ?? "–"} of ${r.trails_total ?? "–"} trails</div><div>${r.lifts_open ?? "–"} of ${r.lifts_total ?? "–"} lifts</div>
+        <div>${esc(surface) || (closed ? "Closed" : "")}</div><div>${base}</div></div>
+      <div class="grid3"><div class="tile"><b>${fmtIn(m.in24)}</b><span class="small">24 hours</span></div><div class="tile"><b>${fmtIn(m.in72)}</b><span class="small">72 hours</span></div><div class="tile"><b>${fmtIn(m.in7)}</b><span class="small">7 days${m.partial7 ? "*" : ""}</span></div></div>
+      <div class="small">${updated ? `Report updated ${fmtDayTime(updated)}` : ""}${stale ? ` · <span class="w">over a day old</span>` : ""}${m.partial7 ? ` · *since ${dateLabel(m.since)}` : ""}${r.season_total_in != null ? ` · Season ${r.season_total_in} in` : ""}</div>
+    </div>`;
+  });
+  $("mountains-body").innerHTML = blocks.join("");
+}
+const fmtIn = (v) => v == null ? "–" : `${Math.round(v * 10) / 10} in`;
+
+// ---------- snowpack ----------
+function renderSnowpack() {
+  const { hist, stake, season } = S.data;
+  const avg = new Map(hist.filter((h) => h.season === "Average Season").map((h) => [h.day_index, h.depth_in]));
+  const cur = new Map(hist.filter((h) => h.season === season.name && h.depth_in != null).map((h) => [h.day_index, h.depth_in]));
+  for (const s of stake) { // our own daily readings fill in where the history file hasn't caught up
+    const d = etParts(Date.parse(s.issued_at)).date;
+    const idx = Math.round((Date.parse(d + "T12:00:00Z") - Date.parse(`${season.startY}-09-01T12:00:00Z`)) / 86400000);
+    if (idx >= 0 && !cur.has(idx) && s.depth_in != null) cur.set(idx, s.depth_in);
+  }
+  const latestStake = stake[0];
+  const latestIdx = Math.max(...cur.keys(), -1);
+  const depth = latestIdx >= 0 ? cur.get(latestIdx) : null;
+  const avgToday = avg.get(season.dayIndex);
+  const weekAgo = [...cur.entries()].filter(([i]) => i <= latestIdx - 7).sort((a, b) => b[0] - a[0])[0];
+  const change = depth != null && weekAgo ? Math.round(depth - weekAgo[1]) : null;
+  const trace = latestStake && latestStake.depth_trace && latestIdx >= 0;
+  // 30-day chart
+  const from = season.dayIndex - 29, to = season.dayIndex;
+  const xs = (i) => 2 + ((i - from) / 29) * 322;
+  const vals = []; for (let i = from; i <= to; i++) { if (cur.has(i)) vals.push(cur.get(i)); if (avg.has(i)) vals.push(avg.get(i)); }
+  const maxV = Math.max(4, ...vals);
+  const ys = (v) => 66 - (v / maxV) * 60;
+  const path = (map) => { let s = ""; for (let i = from; i <= to; i++) if (map.has(i) && map.get(i) != null) s += `${s ? "L" : "M"}${xs(i).toFixed(1)} ${ys(map.get(i)).toFixed(1)} `; return s; };
+  const curPath = path(cur), avgPath = path(avg);
+  $("snowpack-body").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px">
+      <div><div class="small">Mount Mansfield stake</div><div class="big">${depth == null ? "–" : trace && depth === 0 ? "Trace" : `${Math.round(depth)} in`}</div></div>
+      <div style="text-align:right;font-size:13px">${change != null ? `<div style="font-weight:600">${change > 0 ? `Up ${change} in` : change < 0 ? `Down ${-change} in` : "No change"} this week</div>` : ""}
+        <div class="muted">Average for the date: ${avgToday != null ? `${Math.round(avgToday)} in` : "–"}</div></div>
+    </div>
+    <svg role="img" aria-label="Snow depth over the past 30 days compared with the average" viewBox="0 0 326 70" width="100%" height="70" fill="none">
+      ${avgPath ? `<path d="${avgPath}" stroke="#7A8794" stroke-width="2" stroke-dasharray="4 6"></path>` : ""}
+      ${curPath ? `<path d="${curPath}" stroke="#1A4FA0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>` : ""}
+    </svg>
+    <div class="legend"><span>This season</span><span class="avg">Average</span><span class="plain">Past 30 days</span></div>
+    <div class="small">${latestStake ? `Latest weather service report: ${fmtDayTime(Date.parse(latestStake.issued_at))}.` : "No stake report saved yet."}</div>`;
+}
+
+// ---------- verdict ----------
+function renderVerdict() {
+  const red = [], yellow = [], notes = [], clear = [], unchecked = [];
+  // Rain or thaw, and cold or wind (upper mountain, ski days)
+  const up = upperAnalysis();
+  if (!S.skiDays.length || up.missingDays.length === S.skiDays.length) unchecked.push("mountain weather (ski days not in the forecast yet)");
+  else {
+    if (up.rainRed.length) red.push(`Rain likely on the mountain ${fmtDay(up.rainRed[0])}`);
+    else if (up.rainYellow.length) yellow.push(`Chance of rain on the mountain ${fmtDay(up.rainYellow[0])}`);
+    else if (up.thaw.length) yellow.push(`Above freezing on the upper mountain ${fmtDay(up.thaw[0])}`);
+    else clear.push("rain or thaw");
+    const wc = up.windChill;
+    if (wc && wc.f <= RULES.windChillRedF) red.push(`Wind chill ${wc.f}°F on the upper mountain, ${fmtDayTime(wc.t)}`);
+    else if (wc && wc.f <= RULES.windChillYellowF) yellow.push(`Wind chill ${wc.f}°F on the upper mountain, ${fmtDayTime(wc.t)}`);
+    else clear.push("cold");
+    if (up.missingDays.length) notes.push(`Not in the forecast yet: ${up.missingDays.map(dateLabel).join(", ")}`);
+  }
+  // Driving
+  if (!S.drive) unchecked.push("driving" + (S.driveError ? ` (${S.driveError.replace(/\.$/, "")})` : ""));
+  else {
+    const before = red.length + yellow.length;
+    if (S.drive.freezingRain) red.push("Freezing rain or ice on the route during the drive");
+    for (const a of S.drive.alerts) {
+      if (RED_ALERTS.includes(a.event)) red.push(`${a.event} on the route`);
+      else if (YELLOW_ALERTS.includes(a.event)) yellow.push(`${a.event} on the route`);
+      else if (NOTE_ALERTS.includes(a.event)) notes.push(`${a.event} on the route`);
+    }
+    if (S.drive.maxSnowIn >= RULES.snowRedIn) red.push(`About ${S.drive.maxSnowIn} in of snow on the route during the drive`);
+    else if (S.drive.maxSnowIn >= RULES.snowYellowIn) yellow.push(`About ${S.drive.maxSnowIn} in of snow on the route during the drive`);
+    else if (S.drive.maxSnowIn >= 0.5) notes.push(`Light snow on the route (about ${S.drive.maxSnowIn} in)`);
+    if (red.length + yellow.length === before) clear.push("driving");
+    if (S.drive.forecastGaps) notes.push("Part of the drive is beyond the weather forecast");
+  }
+  // Terrain: the better of the two mountains
+  const pcts = ["mad_river_glen", "sugarbush"].map((id) => { const m = mountainSummary(id); return m && m.latest.trails_total ? { id, pct: (100 * m.latest.trails_open) / m.latest.trails_total } : null; }).filter(Boolean);
+  if (!pcts.length) unchecked.push("terrain");
+  else {
+    const best = pcts.reduce((a, b) => (b.pct > a.pct ? b : a));
+    const name = best.id === "sugarbush" ? "Sugarbush" : "Mad River Glen";
+    if (best.pct < RULES.terrainRedPct) red.push(best.pct === 0 ? "Both mountains are closed" : `Little terrain open: best is ${name}, ${Math.round(best.pct)}%`);
+    else if (best.pct < RULES.terrainYellowPct) yellow.push(`Limited terrain: best is ${name}, ${Math.round(best.pct)}%`);
+    else clear.push("terrain open");
+  }
+  const level = red.length ? "reconsider" : yellow.length ? "caution" : unchecked.length ? "unknown" : "go";
+  const title = { reconsider: "Reconsider", caution: "Go with caution", go: "Go", unknown: "Looks OK so far" }[level];
+  const icon = level === "go" ? `<path d="M20 6 9 17l-5-5"></path>` : `<path d="M12 3 2 20h20L12 3z"></path><path d="M12 10v5"></path><path d="M12 18h.01"></path>`;
+  $("verdict").className = `verdict ${level}`;
+  $("verdict").innerHTML = `
+    <div class="title"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>${title}</div>
+    ${red.length + yellow.length ? `<ul>${[...red, ...yellow].map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    ${notes.length ? `<div style="font-size:13px;opacity:.95">${notes.map(esc).join(" · ")}</div>` : ""}
+    ${clear.length ? `<div style="font-size:12px;opacity:.9">Clear: ${clear.join(" · ")}</div>` : ""}
+    ${unchecked.length ? `<div style="font-size:12px;opacity:.9">Not checked: ${esc(unchecked.join(" · "))}</div>` : ""}`;
+}
+
+start().catch((e) => { $("updated").textContent = ""; document.querySelector("main").insertAdjacentHTML("beforeend", `<div class="badbox">Something went wrong loading the hub: ${esc(e.message ?? e)}</div>`); });
+</script>
+</body>
+</html>
