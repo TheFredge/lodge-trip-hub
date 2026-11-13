@@ -105,6 +105,10 @@ input{min-height:44px;border:1px solid #C5CED6;border-radius:10px;padding:0 12px
         <label for="depart">Leaving Towaco</label>
         <input id="depart" type="datetime-local">
       </div>
+      <div class="field hidden" id="depart-time-field">
+        <label for="depart-time" id="depart-time-label">Leaving Towaco at</label>
+        <input id="depart-time" type="time">
+      </div>
       <div class="small" id="trip-note"></div>
     </section>
 
@@ -158,7 +162,6 @@ const RULES = {
   rainRedPop: 50, rainYellowPop: 20, thawF: 32,     // ski days, upper mountain
   snowRedIn: 8, snowYellowIn: 3,                    // on the route during the drive
   skiFromHour: 9, skiToHour: 16,                    // "ski hours", Eastern time
-  defaultDepart: "05:30",                           // for booked trips
 };
 const RED_ALERTS = ["Blizzard Warning", "Ice Storm Warning"];
 const YELLOW_ALERTS = ["Winter Storm Warning"];
@@ -296,22 +299,36 @@ function renderTripPicker() {
   btns.push(`<button type="button" data-mode="custom">Pick a date</button>`);
   $("trip-buttons").innerHTML = btns.join("");
   $("trip-buttons").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => selectTrip(b.dataset.mode, b.dataset.idx)));
-  $("depart").addEventListener("change", () => { if ($("depart").value) { if (S.mode === "now") S.mode = "custom"; refreshDrive(fromLocalInput($("depart").value)); } });
+  $("depart").addEventListener("change", () => { if ($("depart").value) refreshDrive(fromLocalInput($("depart").value)); });
+  $("depart-time").addEventListener("change", () => {
+    const t = S.trips[S.tripIdx]; const v = $("depart-time").value;
+    if (!t || !v) return;
+    try { localStorage.setItem(tripTimeKey(t), v); } catch { /* storage unavailable: just don't remember it */ }
+    const [h, m] = v.split(":").map(Number);
+    refreshDrive(wallToMs(t.startDate, h, m));
+  });
 }
+const tripTimeKey = (t) => `lth-depart:${t.startDate}:${t.title}`;
 
 async function selectTrip(mode, idx) {
   S.mode = mode; S.tripIdx = idx != null ? +idx : null;
   $("trip-buttons").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode && (mode !== "trip" || +b.dataset.idx === S.tripIdx))));
-  let depart = null; let note = "";
+  let depart = null; let note = ""; let noTime = false;
+  $("depart-time-field").classList.add("hidden");
   if (mode === "now") {
     $("depart-field").classList.add("hidden");
     note = "Leaving now from Towaco.";
   } else if (mode === "trip") {
     const t = S.trips[S.tripIdx];
-    $("depart-field").classList.remove("hidden");
-    const [h, m] = RULES.defaultDepart.split(":").map(Number);
-    depart = t.startTime ? Date.parse(t.startTime) : wallToMs(t.startDate, h, m);
-    $("depart").value = toLocalInput(depart);
+    $("depart-field").classList.add("hidden");
+    $("depart-time-field").classList.remove("hidden");
+    $("depart-time-label").textContent = `Leaving Towaco on ${dateLabel(t.startDate)} at`;
+    // Every trip is different: use the time last picked for this trip, or the calendar event's own time; otherwise ask
+    let saved = null; try { saved = localStorage.getItem(tripTimeKey(t)); } catch { /* storage unavailable */ }
+    const fromEvent = t.startTime ? toLocalInput(Date.parse(t.startTime)).slice(11) : null;
+    $("depart-time").value = saved ?? fromEvent ?? "";
+    if ($("depart-time").value) { const [h, m] = $("depart-time").value.split(":").map(Number); depart = wallToMs(t.startDate, h, m); }
+    else noTime = true;
     const cd = Date.parse(t.cancelDeadline);
     note = `${esc(t.title)}, booked. ${cd > Date.now() ? `Free cancel until ${fmtTime(cd)} ${fmtDay(cd)}.` : `The free-cancel deadline (${fmtDay(cd)}, ${fmtTime(cd)}) has passed.`}`;
   } else {
@@ -322,14 +339,15 @@ async function selectTrip(mode, idx) {
   }
   if (S.tripsError) note += ` <span class="w">${esc(S.tripsError)}</span>`;
   $("trip-note").innerHTML = note;
-  await refreshDrive(depart);
+  await refreshDrive(depart, noTime);
 }
 
-async function refreshDrive(departMs) {
+async function refreshDrive(departMs, noTime = false) {
   $("drive-body").innerHTML = `<span class="muted">Working out the drive…</span>`;
-  S.drive = null; S.driveError = null;
-  const r = await sb.functions.invoke("hub", { body: { action: "drive", depart: departMs ? new Date(departMs).toISOString() : null } });
-  if (r.error) S.driveError = "Couldn't reach the drive lookup.";
+  S.drive = null; S.driveError = null; S.needTime = noTime;
+  const r = noTime ? { data: null } : await sb.functions.invoke("hub", { body: { action: "drive", depart: departMs ? new Date(departMs).toISOString() : null } });
+  if (noTime) S.driveError = "Pick a departure time to see the drive.";
+  else if (r.error) S.driveError = "Couldn't reach the drive lookup.";
   else if (r.data?.error === "no_maps_key") S.driveError = "Live drive time isn't set up yet (Google Maps key).";
   else if (r.data?.error === "daily_limit") S.driveError = `Today's ${r.data.limit} drive lookups are used up. It resets at midnight.`;
   else if (r.data?.error) S.driveError = `Drive lookup failed: ${r.data.error}`;
@@ -354,6 +372,10 @@ function wxLabel(list) {
 function renderDrive(arriveMs) {
   const sun = sunTimes(etParts(arriveMs).date);
   const dayNote = sun ? (arriveMs < sun.rise ? `You'd arrive before sunrise (${fmtTime(sun.rise)}).` : arriveMs > sun.set ? `You'd arrive after dark. Sunset is ${fmtTime(sun.set)}.` : `Sunset ${fmtTime(sun.set)}. You arrive in daylight.`) : "";
+  if (S.needTime) {
+    $("drive-body").innerHTML = `<div class="infobox">Pick the time you'll leave Towaco (above) to see the arrival time, the route weather and alerts. The page remembers it for this trip.</div>`;
+    return;
+  }
   if (!S.drive) {
     $("drive-body").innerHTML = `<div class="warnbox">${esc(S.driveError)}</div><div class="small">${esc(dayNote)} ${S.driveError ? "Arrival estimated at about 5½ hours." : ""}</div>`;
     return;
@@ -572,7 +594,8 @@ function renderVerdict() {
     if (up.missingDays.length) notes.push(`Not in the forecast yet: ${up.missingDays.map(dateLabel).join(", ")}`);
   }
   // Driving
-  if (!S.drive) unchecked.push("driving" + (S.driveError ? ` (${S.driveError.replace(/\.$/, "")})` : ""));
+  if (S.needTime) unchecked.push("driving (pick a departure time)");
+  else if (!S.drive) unchecked.push("driving" + (S.driveError ? ` (${S.driveError.replace(/\.$/, "")})` : ""));
   else {
     const before = red.length + yellow.length;
     if (S.drive.freezingRain) red.push("Freezing rain or ice on the route during the drive");
