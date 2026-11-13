@@ -75,11 +75,17 @@ input{min-height:44px;border:1px solid #C5CED6;border-radius:10px;padding:0 12px
   <!-- Sign-in -->
   <section class="card hidden" id="signin">
     <h2>Sign in</h2>
-    <p style="margin:0">Enter your email and we'll send you a sign-in link. Open it on this phone.</p>
+    <p style="margin:0">Enter your email. We'll send a sign-in code (and a link). Type the code here, which works even from a home-screen icon.</p>
     <form id="signin-form" class="field">
       <label for="email">Email</label>
       <input id="email" type="email" autocomplete="email" required>
-      <button class="primary" type="submit" style="margin-top:8px">Email me a sign-in link</button>
+      <button class="primary" type="submit" style="margin-top:8px">Email me a code</button>
+    </form>
+    <form id="code-form" class="field hidden">
+      <label for="code">Code from the email</label>
+      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="14" required>
+      <button class="primary" type="submit" style="margin-top:8px">Sign in</button>
+      <button type="button" id="code-back" class="pill" style="align-self:flex-start;margin-top:4px;background:#fff;color:var(--blue);padding-left:0">Use a different email</button>
     </form>
     <div id="signin-msg" class="small"></div>
   </section>
@@ -227,7 +233,25 @@ $("signin-form").addEventListener("submit", async (e) => {
   const email = $("email").value.trim();
   $("signin-msg").textContent = "Sending…";
   const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
-  $("signin-msg").textContent = error ? `Couldn't send the link: ${error.message}` : "Check your email for the sign-in link.";
+  if (error) { $("signin-msg").textContent = `Couldn't send the email: ${error.message}`; return; }
+  $("signin-form").classList.add("hidden");
+  $("code-form").classList.remove("hidden");
+  $("code").focus();
+  $("signin-msg").textContent = `Email sent to ${email}. Type the code from it, or tap its link on this phone.`;
+});
+$("code-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("email").value.trim();
+  const token = $("code").value.replace(/\D/g, "");
+  $("signin-msg").textContent = "Checking…";
+  const { error } = await sb.auth.verifyOtp({ email, token, type: "email" });
+  if (error) { $("signin-msg").textContent = `That code didn't work: ${error.message}`; return; }
+  location.reload();
+});
+$("code-back").addEventListener("click", () => {
+  $("code-form").classList.add("hidden");
+  $("signin-form").classList.remove("hidden");
+  $("signin-msg").textContent = "";
 });
 $("signout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
 
