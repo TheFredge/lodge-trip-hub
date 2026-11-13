@@ -112,7 +112,9 @@ Deno.serve(async (req: Request) => {
   const to = (rcpt ?? []).map((r: any) => r.email);
 
   const results: any[] = [];
-  for (const trip of t.trips) {
+  // A forced test covers only the next trip, is marked [Test], and leaves no record (so real emails still go out)
+  const list = force ? t.trips.filter((x: any) => x.lastDate >= today).slice(0, 1) : t.trips;
+  for (const trip of list) {
     const key = tripKey(trip);
     const daysUntil = Math.round((Date.parse(trip.startDate + "T12:00:00Z") - Date.parse(today + "T12:00:00Z")) / 86400000);
     const deadlineDay = etParts(Date.parse(trip.cancelDeadline)).date;
@@ -133,15 +135,16 @@ Deno.serve(async (req: Request) => {
 
     if (kind) {
       const email = buildEmail(kind, trip, ev);
+      if (force) email.subject = `[Test] ${email.subject}`;
       res.email = { kind, subject: email.subject, to: to.length };
       if (dry) res.email.html = email.html;
       else {
         const s = await send(to, email.subject, email.html);
         res.email.result = s;
-        if (s.ok) await admin.from("trip_alert_log").insert({ trip_key: key, kind, level: ev.level, recipients: to.length, result: s });
+        if (s.ok && !force) await admin.from("trip_alert_log").insert({ trip_key: key, kind, level: ev.level, recipients: to.length, result: s });
       }
     }
-    if (!dry) await admin.from("trip_alert_state").upsert({ trip_key: key, last_level: ev.level, checked_at: new Date().toISOString() });
+    if (!dry && !force) await admin.from("trip_alert_state").upsert({ trip_key: key, last_level: ev.level, checked_at: new Date().toISOString() });
     results.push(res);
   }
   return json({ ok: true, dry, at: `${today} ${et.hour}:00 Eastern`, recipients: to.length, results });
