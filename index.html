@@ -546,7 +546,8 @@ function renderSnowpack() {
     const idx = Math.round((Date.parse(d + "T12:00:00Z") - Date.parse(`${season.startY}-09-01T12:00:00Z`)) / 86400000);
     if (idx >= 0 && !cur.has(idx) && s.depth_in != null) cur.set(idx, s.depth_in);
   }
-  const latestStake = stake[0];
+  const latestStake = stake.find((s) => s.depth_in != null) ?? stake[0]; // newest report that actually gave a depth
+  const blankNewest = stake[0] && stake[0].depth_in == null && latestStake !== stake[0];
   const latestIdx = Math.max(...cur.keys(), -1);
   const depth = latestIdx >= 0 ? cur.get(latestIdx) : null;
   const avgToday = avg.get(season.dayIndex);
@@ -580,7 +581,7 @@ function renderSnowpack() {
     </svg>
     <div class="legend"><span>This season</span><span class="avg">Average</span><span class="plain">Past 30 days</span></div>
     ${context}
-    <div class="small">${latestStake ? `Latest weather service report: ${fmtDayTime(Date.parse(latestStake.issued_at))}.` : "No stake report saved yet."} Past seasons from the Mansfield stake record since 1954.</div>`;
+    <div class="small">${latestStake ? `Depth from the weather service report of ${fmtDayTime(Date.parse(latestStake.issued_at))}.` : "No stake report saved yet."}${blankNewest ? ` The newest report (${fmtDayTime(Date.parse(stake[0].issued_at))}) didn't include a depth.` : ""} Past seasons from the Mansfield stake record since 1954.</div>`;
 }
 
 // ---------- verdict ----------
