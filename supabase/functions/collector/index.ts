@@ -201,16 +201,21 @@ async function readStake() {
   const t = await fetchText(STAKE, "text/html");
   const im = t.match(/(\d{3,4}) ([AP]M) (E[SD]T) \w{3} (\w{3}) (\d{1,2}) (\d{4})/);
   const line = (t.match(/^.*Mount Mansfield.*$/m) ?? [null])[0];
-  if (!im || !line) throw new Error("Mount Mansfield line or issue time not found");
+  if (!im) throw new Error("Issue time not found in the report");
+  if (!line) return null; // Mansfield only appears in some issues (usually the evening one): nothing new this time
   const hhmm = im[1].padStart(4, "0");
   let h = Number(hhmm.slice(0, 2)) % 12; if (im[2] === "PM") h += 12;
   const mons = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const off = im[3] === "EDT" ? 4 : 5;
   const issued_at = new Date(Date.UTC(Number(im[6]), mons.indexOf(im[4]), Number(im[5]), h + off, Number(hhmm.slice(2)))).toISOString();
-  const toks = line.trim().split(/\s+/);
-  const val = (s: string) => s === "T" ? { v: 0, trace: true } : (s === "M" ? { v: null, trace: false } : { v: num(s), trace: false });
-  const ns = val(toks[toks.length - 2]);
-  const dp = val(toks[toks.length - 1]);
+  // The line is fixed-width: precip, high, low, current temp, then new snow and snow depth in set columns.
+  // Read by column position: when the observer leaves a column blank, counting from the end of the line
+  // picks up the temperatures instead (that showed 45 in of depth on Nov 19, 2026).
+  const row = line.slice(line.indexOf("Mount Mansfield"));
+  const val = (s: string) => s === "" || s === "M" ? { v: null, trace: false } : s === "T" ? { v: 0, trace: true } : { v: num(s), trace: false };
+  // Columns (from the report's headings): weather text ends before 57, "New" 57-61, "Total" (depth) 62-67, SWE from 68.
+  const ns = val(row.slice(57, 62).trim());
+  const dp = val(row.slice(62, 68).trim());
   return { issued_text: im[0], issued_at, new_snow_in: ns.v, new_snow_trace: ns.trace, depth_in: dp.v, depth_trace: dp.trace, raw_line: line.trim() };
 }
 
@@ -277,7 +282,7 @@ Deno.serve(async (req: Request) => {
   await Promise.all([
     step(results, "sugarbush", async () => { const r = await readSugarbush(); return dry ? { parsed: { ...r, lifts: r.lifts.length, report_text: r.report_text?.slice(0, 200) } } : { saved: await saveMountain(r), trails: `${r.trails_open}/${r.trails_total}`, lifts: `${r.lifts_open}/${r.lifts_total}`, updated: r.source_updated_text }; }),
     step(results, "mad_river_glen", async () => { const r = await readMrg(); return dry ? { parsed: { ...r, lifts: r.lifts.slice(0, 8), liftsAndTrails: r.lifts.length, statuses: [...new Set(r.lifts.map((x: any) => x.status))], groups: [...new Set(r.lifts.map((x: any) => x.group).filter(Boolean))] } } : { saved: await saveMountain(r), trails: `${r.trails_open}/${r.trails_total}`, lifts: `${r.lifts_open}/${r.lifts_total}`, updated: r.source_updated_text }; }),
-    step(results, "stake", async () => { const r = await readStake(); if (dry) return { parsed: r }; const { error } = await db.from("stake_readings").upsert(r, { onConflict: "issued_text", ignoreDuplicates: true }); if (error) throw error; return { issued: r.issued_text, line: r.raw_line }; }),
+    step(results, "stake", async () => { const r = await readStake(); if (!r) return { skipped: "no Mount Mansfield line in this issue" }; if (dry) return { parsed: r }; const { error } = await db.from("stake_readings").upsert(r, { onConflict: "issued_text", ignoreDuplicates: true }); if (error) throw error; return { issued: r.issued_text, line: r.raw_line }; }),
     step(results, "stake_history", () => readStakeHistory(dry)),
     ...(points ?? []).map((p: any) => step(results, `forecast_${p.id}`, async () => { const r = await readForecast(p); if (dry) return { periods: r.periods.length, hourlyKeys: Object.keys(r.hourly), first: r.periods[0] }; const { error } = await db.from("forecast_latest").upsert(r); if (error) throw error; return { periods: r.periods.length, updated: r.forecast_updated_at }; })),
     ...[["VT", "area=VT"], ["NY", "area=NY"], ["NJ", "area=NJ"], ...(lodge ? [["lodge", `point=${lodge.lat},${lodge.lon}`]] : [])].map(([scope, q]) => step(results, `alerts_${scope}`, async () => { const r = await readAlerts(scope, q); if (dry) return { count: r.alerts.length, events: r.alerts.map((a: any) => a.event) }; const { error } = await db.from("alerts_latest").upsert(r); if (error) throw error; return { count: r.alerts.length }; })),
