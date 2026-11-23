@@ -82,6 +82,7 @@ function buildEmail(kind: "monday" | "red", trip: any, ev: any) {
 async function send(to: string[], subject: string, html: string) {
   const key = Deno.env.get("RESEND_API_KEY");
   if (!key) return { ok: false, error: "no_resend_key" };
+  if (!FROM) return { ok: false, error: "no_sender_address" };
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: FROM, to, subject, html }), signal: AbortSignal.timeout(20000),
@@ -147,5 +148,5 @@ Deno.serve(async (req: Request) => {
     if (!dry && !force) await admin.from("trip_alert_state").upsert({ trip_key: key, last_level: ev.level, checked_at: new Date().toISOString() });
     results.push(res);
   }
-  return json({ ok: true, dry, at: `${today} ${et.hour}:00 Eastern`, recipients: to.length, results });
+  return json({ ok: true, dry, at: `${today} ${et.hour}:00 Eastern`, sender: FROM ? "set" : "missing", recipients: to.length, results });
 });

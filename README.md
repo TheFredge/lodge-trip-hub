@@ -12,7 +12,7 @@ Data sources: Sugarbush's mountain report feed, Mad River Glen's conditions page
 
 This repo is public because GitHub Pages needs it, and Pages publishes every file in it. So it holds nothing personal or secret:
 
-- No passwords or private keys. The Google Maps key, the calendar link and the Resend email key are stored as secrets in Supabase only. The Supabase key in `index.html` is the public "publishable" key, designed to be visible; every table behind it is locked to approved sign-ins.
+- No passwords or private keys. The Google Maps key, the calendar link, the Resend email key and the trip emails' sender address are stored as secrets in Supabase only. The Supabase key in `index.html` is the public "publishable" key, designed to be visible; every table behind it is locked to approved sign-ins.
 - No names or email addresses. Approved accounts, and who gets the trip emails, are listed only in Supabase.
 - No trip dates. Booked trips come from a private calendar link and stay behind sign-in.
 - The drive's starting town and the lodge's address are in the code because the drive time and navigation need them.
