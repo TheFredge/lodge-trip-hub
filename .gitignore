@@ -1,0 +1,7 @@
+# Keep secrets and personal files out of this repo
+.env
+.env.*
+*.ics
+*.pem
+*.key
+.DS_Store
