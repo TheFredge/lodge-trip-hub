@@ -6,8 +6,9 @@
 Towaco
 # The lodge's address, needed for navigation; the lodge's location is public (decision 2026-11-23)
 235 Schuss Pass
-44.2012
+44.2012,-72.9142
+lat=44.2012
 # Public mountain weather points: Lincoln Peak, Mount Ellen and Stark Mountain (Mad River Glen)
-44.1273
-44.1601
-44.1842
+44.1273,-72.9284
+44.1601,-72.9293
+44.1842,-72.9289

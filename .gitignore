@@ -1,7 +1,26 @@
-# Keep secrets and personal files out of this repo
+# Keep secrets and personal files out of this repo (see CLAUDE.md, rule 2)
 .env
 .env.*
+!.env.example
 *.ics
 *.pem
 *.key
+*.p12
+id_rsa*
+id_ed25519*
+credentials*.json
+secrets.*
 .DS_Store
+node_modules/
+# Database copies and exports hold everyone's data (rule 2)
+*.dump
+*.sql.gz
+*.backup
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+# Logs and Python's compiled files
+*.log
+__pycache__/
+*.pyc
