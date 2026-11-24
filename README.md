@@ -16,3 +16,5 @@ This repo is public because GitHub Pages needs it, and Pages publishes every fil
 - No names or email addresses. Approved accounts, and who gets the trip emails, are listed only in Supabase.
 - No trip dates. Booked trips come from a private calendar link and stay behind sign-in.
 - The drive's starting town and the lodge's address are in the code because the drive time and navigation need them.
+
+The rules this repo follows are in `CLAUDE.md`. `scripts/privacy_scan.py` checks every version of every file against them, and GitHub runs that check automatically after every push.
